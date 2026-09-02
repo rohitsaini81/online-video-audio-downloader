@@ -293,36 +293,26 @@ private fun YtDlpRuntimeContent(
                 )
 
                 Text(
-                    text = "Download format",
+                    text = "Choose a yt-dlp mode",
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.White
                 )
 
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    DownloadMode.entries.forEach { mode ->
-                        if (mode == downloadMode) {
-                            Button(
-                                onClick = { onDownloadModeChange(mode) },
-                                enabled = !isBusy,
-                            ) {
-                                Text(mode.label)
-                            }
-                        } else {
-                            OutlinedButton(
-                                onClick = { onDownloadModeChange(mode) },
-                                enabled = !isBusy,
-                            ) {
-                                Text(mode.label)
-                            }
-                        }
-                    }
-                }
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    ModeCard(
+                        title = "Download Video",
+                        description = "Downloads a progressive video file that already includes audio.",
+                        selected = downloadMode == DownloadMode.VIDEO,
+                        enabled = !isBusy,
+                        onClick = { onDownloadModeChange(DownloadMode.VIDEO) },
+                    )
 
-                if (downloadMode == DownloadMode.AUDIO) {
-                    Text(
-                        text = "Audio is saved in the source format. MP3 conversion requires FFmpeg and is not enabled yet.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFFB8C2E0),
+                    ModeCard(
+                        title = "Download Audio",
+                        description = "Downloads the best audio stream in its original M4A, WebM, or other source format.",
+                        selected = downloadMode == DownloadMode.AUDIO,
+                        enabled = !isBusy,
+                        onClick = { onDownloadModeChange(DownloadMode.AUDIO) },
                     )
                 }
 
@@ -338,7 +328,7 @@ private fun YtDlpRuntimeContent(
                         onClick = onDownloadClick,
                         enabled = !isBusy
                     ) {
-                        Text("Download")
+                        Text("Start ${downloadMode.label} Download")
                     }
                 }
 
@@ -434,6 +424,64 @@ private fun YtDlpRuntimeContent(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ModeCard(
+    title: String,
+    description: String,
+    selected: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    val primary = Color(0xFF7CB7FF)
+    val accent = Color(0xFFB8C2E0)
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (selected) Color(0xFF172544) else Color(0xFF10192F)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (selected) 8.dp else 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            if (selected) {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onClick,
+                    enabled = enabled,
+                ) {
+                    Text("✓ $title")
+                }
+            } else {
+                OutlinedButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onClick,
+                    enabled = enabled,
+                ) {
+                    Text(title)
+                }
+            }
+
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = accent,
+            )
+
+            if (selected) {
+                Text(
+                    text = "Selected mode",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = primary
+                )
             }
         }
     }

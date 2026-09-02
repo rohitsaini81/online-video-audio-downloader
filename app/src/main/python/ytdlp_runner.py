@@ -60,10 +60,12 @@ def download(url, output_dir, mode, callback):
     if mode == "audio":
         format_selector = "bestaudio/best[acodec!=none]"
     else:
+        # Without FFmpeg we cannot merge separate video and audio streams.
+        # Require a progressive format which already contains both, so video
+        # mode can never silently produce a muted video-only file.
         format_selector = (
             "best[ext=mp4][vcodec!=none][acodec!=none]/"
-            "best[vcodec!=none][acodec!=none]/"
-            "bestvideo/bestaudio"
+            "best[vcodec!=none][acodec!=none]"
         )
 
     callback.log(f"Mode: {mode}")
@@ -71,10 +73,8 @@ def download(url, output_dir, mode, callback):
 
     options = {
         "outtmpl": str(output_path / "%(title)s.%(ext)s"),
-        # FFmpeg isn't bundled yet, so prefer a format which already contains
-        # both video and audio. Some sites don't offer a progressive MP4, so
-        # fall back to another combined format, then a video-only or audio-only
-        # format rather than failing with "Requested format is not available".
+        # FFmpeg isn't bundled yet, so video mode only accepts a format which
+        # already contains both video and audio.
         "format": format_selector,
         "noplaylist": True,
         "logger": _AndroidLogger(callback),
