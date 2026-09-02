@@ -1,74 +1,47 @@
 package com.example.ytdlpapp
 
 import android.content.Context
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import java.io.File
 
 class YtDlpRunner(private val context: Context) {
 
-    private fun prepareBinary(): File {
-        val binDir = File(context.filesDir, "bin")
+    @Volatile
+    private var pythonStarted = false
 
-        if (!binDir.exists()) {
-            binDir.mkdirs()
-        }
+    private fun ensurePythonStarted() {
+        if (pythonStarted) return
 
-        val binary = File(binDir, "yt-dlp")
+        synchronized(this) {
+            if (pythonStarted) return
 
-        if (!binary.exists()) {
-            context.assets.open("bin/yt-dlp").use { input ->
-                binary.outputStream().use { output ->
-                    input.copyTo(output)
-                }
+            if (!Python.isStarted()) {
+                Python.start(AndroidPlatform(context.applicationContext))
             }
+            pythonStarted = true
         }
-
-        binary.setExecutable(true)
-
-        return binary
     }
 
-    fun download(url: String): Result<String> {
-        return try {
-            val ytDlp = prepareBinary()
+    fun probe(): Result<String> = runCatching {
+        ensurePythonStarted()
 
-            val outputDir = File(
-                context.getExternalFilesDir(null),
-                "downloads"
-            )
+        val python = Python.getInstance()
+        val module = python.getModule("ytdlp_runner")
+        module.callAttr("probe").toJava(String::class.java)
+    }
 
-            if (!outputDir.exists()) {
-                outputDir.mkdirs()
-            }
+    fun download(url: String): Result<String> = runCatching {
+        ensurePythonStarted()
 
-            val outputTemplate = File(
-                outputDir,
-                "%(title)s.%(ext)s"
-            ).absolutePath
-
-            val process = ProcessBuilder(
-                ytDlp.absolutePath,
-                "-o",
-                outputTemplate,
-                url
-            )
-                .redirectErrorStream(true)
-                .start()
-
-            val output = process.inputStream
-                .bufferedReader()
-                .readText()
-
-            val exitCode = process.waitFor()
-
-            if (exitCode == 0) {
-                Result.success(output)
-            } else {
-                Result.failure(
-                    Exception("yt-dlp failed:\n$output")
-                )
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
+        val baseDir = context.getExternalFilesDir(null) ?: context.filesDir
+        val outputDir = File(baseDir, "downloads")
+        if (!outputDir.exists()) {
+            outputDir.mkdirs()
         }
+
+        val python = Python.getInstance()
+        val module = python.getModule("ytdlp_runner")
+        module.callAttr("download", url, outputDir.absolutePath).toJava(String::class.java)
     }
 }

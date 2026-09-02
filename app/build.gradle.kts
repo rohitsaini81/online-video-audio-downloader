@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.chaquopy)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
@@ -16,6 +17,10 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
+        ndk {
+            abiFilters += "arm64-v8a"
+        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -38,6 +43,22 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+}
+
+chaquopy {
+    defaultConfig {
+        version = "3.14"
+
+        pip {
+            install("yt-dlp==2026.08.19")
+        }
+    }
+
+    sourceSets {
+        getByName("main") {
+            srcDir("src/main/python")
+        }
     }
 }
 
