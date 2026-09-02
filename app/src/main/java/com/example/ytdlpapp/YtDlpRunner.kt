@@ -5,6 +5,10 @@ import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import java.io.File
 
+class YtDlpLogCallback(private val onLog: (String) -> Unit) {
+    fun log(message: String) = onLog(message)
+}
+
 class YtDlpRunner(private val context: Context) {
 
     @Volatile
@@ -31,7 +35,11 @@ class YtDlpRunner(private val context: Context) {
         module.callAttr("probe").toJava(String::class.java)
     }
 
-    fun download(url: String): Result<String> = runCatching {
+    fun download(
+        url: String,
+        audioOnly: Boolean,
+        onLog: (String) -> Unit,
+    ): Result<String> = runCatching {
         ensurePythonStarted()
 
         val baseDir = context.getExternalFilesDir(null) ?: context.filesDir
@@ -42,6 +50,12 @@ class YtDlpRunner(private val context: Context) {
 
         val python = Python.getInstance()
         val module = python.getModule("ytdlp_runner")
-        module.callAttr("download", url, outputDir.absolutePath).toJava(String::class.java)
+        module.callAttr(
+            "download",
+            url,
+            outputDir.absolutePath,
+            if (audioOnly) "audio" else "video",
+            YtDlpLogCallback(onLog),
+        ).toJava(String::class.java)
     }
 }

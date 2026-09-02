@@ -5,6 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +24,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -59,6 +62,11 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+private enum class DownloadMode(val label: String) {
+    VIDEO("Video"),
+    AUDIO("Audio"),
+}
+
 @Composable
 fun YtDlpRuntimeScreen() {
     val context = LocalContext.current
@@ -70,6 +78,7 @@ fun YtDlpRuntimeScreen() {
         mutableStateOf("https://youtu.be/YmaU-VeCtoA?si=SLo5rWdh3OAjcEGL")
     }
     var isBusy by rememberSaveable { mutableStateOf(false) }
+    var downloadMode by rememberSaveable { mutableStateOf(DownloadMode.VIDEO) }
     var status by rememberSaveable {
         mutableStateOf("Ready to probe Chaquopy and yt-dlp.")
     }
@@ -123,9 +132,27 @@ fun YtDlpRuntimeScreen() {
             status = "Downloading with yt-dlp..."
             logs.clear()
             logs.add("URL: $trimmed")
+            logs.add("Mode: ${downloadMode.label}")
 
             val result = withContext(Dispatchers.IO) {
-                runner.download(trimmed)
+                runner.download(
+                    url = trimmed,
+                    audioOnly = downloadMode == DownloadMode.AUDIO,
+                ) { line ->
+                    scope.launch(Dispatchers.Main) {
+                        if (line.startsWith("Downloading:") &&
+                            logs.lastOrNull()?.startsWith("Downloading:") == true
+                        ) {
+                            logs[logs.lastIndex] = line
+                        } else {
+                            logs.add(line)
+                        }
+
+                        if (logs.size > 100) {
+                            logs.removeAt(0)
+                        }
+                    }
+                }
             }
 
             result.fold(
@@ -174,11 +201,13 @@ fun YtDlpRuntimeScreen() {
                     .fillMaxSize()
                     .padding(20.dp),
                 url = url,
+                downloadMode = downloadMode,
                 isBusy = isBusy,
                 status = status,
                 runtimeSummary = runtimeSummary,
                 logs = logs,
                 onUrlChange = { url = it },
+                onDownloadModeChange = { downloadMode = it },
                 onProbeClick = {
                     scope.launch {
                         refreshProbe()
@@ -196,11 +225,13 @@ fun YtDlpRuntimeScreen() {
 private fun YtDlpRuntimeContent(
     modifier: Modifier = Modifier,
     url: String,
+    downloadMode: DownloadMode,
     isBusy: Boolean,
     status: String,
     runtimeSummary: String,
     logs: List<String>,
     onUrlChange: (String) -> Unit,
+    onDownloadModeChange: (DownloadMode) -> Unit,
     onProbeClick: () -> Unit,
     onDownloadClick: () -> Unit,
 ) {
@@ -260,6 +291,40 @@ private fun YtDlpRuntimeContent(
                     singleLine = true,
                     enabled = !isBusy,
                 )
+
+                Text(
+                    text = "Download format",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White
+                )
+
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    DownloadMode.entries.forEach { mode ->
+                        if (mode == downloadMode) {
+                            Button(
+                                onClick = { onDownloadModeChange(mode) },
+                                enabled = !isBusy,
+                            ) {
+                                Text(mode.label)
+                            }
+                        } else {
+                            OutlinedButton(
+                                onClick = { onDownloadModeChange(mode) },
+                                enabled = !isBusy,
+                            ) {
+                                Text(mode.label)
+                            }
+                        }
+                    }
+                }
+
+                if (downloadMode == DownloadMode.AUDIO) {
+                    Text(
+                        text = "Audio is saved in the source format. MP3 conversion requires FFmpeg and is not enabled yet.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFFB8C2E0),
+                    )
+                }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Button(
@@ -350,10 +415,11 @@ private fun YtDlpRuntimeContent(
                         color = Color(0xFF93A2CD)
                     )
                 } else {
-                    Column(
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        logs.forEach { line ->
+                        items(logs) { line ->
                             Surface(
                                 color = Color(0xFF18233F),
                                 shape = RoundedCornerShape(14.dp)
@@ -410,6 +476,7 @@ fun YtDlpRuntimeScreenPreview() {
                 .fillMaxSize()
                 .padding(20.dp),
             url = "https://youtu.be/YmaU-VeCtoA?si=SLo5rWdh3OAjcEGL",
+            downloadMode = DownloadMode.VIDEO,
             isBusy = false,
             status = "Python imported yt-dlp successfully.",
             runtimeSummary = "Python: 3.14.5\nyt-dlp: 2026.08.19\nyt-dlp path: /data/user/0/com.example.ytdlpapp/files/chaquopy/...",
@@ -420,6 +487,7 @@ fun YtDlpRuntimeScreenPreview() {
                 "yt-dlp path: /data/user/0/com.example.ytdlpapp/files/chaquopy/..."
             ),
             onUrlChange = {},
+            onDownloadModeChange = {},
             onProbeClick = {},
             onDownloadClick = {}
         )
