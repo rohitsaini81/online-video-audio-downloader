@@ -44,6 +44,11 @@ android {
     buildFeatures {
         compose = true
     }
+    packaging {
+        jniLibs {
+            pickFirsts += "**/libc++_shared.so"
+        }
+    }
 }
 
 chaquopy {
@@ -75,6 +80,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.ffmpeg.kit.full)
+    implementation(libs.smart.exception.java)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

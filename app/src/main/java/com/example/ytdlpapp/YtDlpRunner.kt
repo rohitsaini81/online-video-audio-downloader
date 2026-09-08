@@ -7,6 +7,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
 import com.arthenica.ffmpegkit.FFmpegKit
+import com.arthenica.ffmpegkit.FFmpegSession
 import com.arthenica.ffmpegkit.ReturnCode
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
@@ -226,14 +227,12 @@ class YtDlpRunner(private val context: Context) {
         }
 
         onLog("Converting to MP3 with FFmpegKit...")
-        val session = FFmpegKit.executeWithArguments(
-            arrayOf(
-                "-y",
-                "-i", audioFile.absolutePath,
-                "-vn",
-                "-b:a", "320k",
-                mp3File.absolutePath,
-            )
+        val session = runFfmpeg(
+            "-y",
+            "-i", audioFile.absolutePath,
+            "-vn",
+            "-b:a", "320k",
+            mp3File.absolutePath,
         )
         if (!ReturnCode.isSuccess(session.returnCode)) {
             throw IllegalStateException(
@@ -263,16 +262,14 @@ class YtDlpRunner(private val context: Context) {
         }
 
         onLog("Merging with FFmpegKit...")
-        val session = FFmpegKit.executeWithArguments(
-            arrayOf(
-                "-y",
-                "-i", videoFile.absolutePath,
-                "-i", audioFile.absolutePath,
-                "-c:v", "copy",
-                "-c:a", "aac",
-                "-movflags", "+faststart",
-                mergedFile.absolutePath,
-            )
+        val session = runFfmpeg(
+            "-y",
+            "-i", videoFile.absolutePath,
+            "-i", audioFile.absolutePath,
+            "-c:v", "copy",
+            "-c:a", "aac",
+            "-movflags", "+faststart",
+            mergedFile.absolutePath,
         )
         if (!ReturnCode.isSuccess(session.returnCode)) {
             throw IllegalStateException(
@@ -284,6 +281,14 @@ class YtDlpRunner(private val context: Context) {
         audioFile.delete()
         onLog("Merge complete: ${mergedFile.absolutePath}")
         return mergedFile
+    }
+
+    private fun runFfmpeg(vararg arguments: String): FFmpegSession {
+        return try {
+            FFmpegKit.executeWithArguments(arguments)
+        } catch (error: Throwable) {
+            throw IllegalStateException(error.localizedMessage ?: error.toString(), error)
+        }
     }
 
     private fun publishToDownloads(source: File): DownloadResult {

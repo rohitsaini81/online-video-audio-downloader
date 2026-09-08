@@ -229,10 +229,10 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
                             status = DownloadStatus.FAILED,
                             percentLabel = "Failed",
                             speedLabel = "",
-                            error = error.message ?: error.toString(),
+                            error = error.userMessage(),
                         )
                     }
-                    snackbarMessage = error.message ?: "Download failed."
+                    snackbarMessage = error.userMessage()
                 }
             )
         }
@@ -306,5 +306,23 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun persistHistory() {
         historyStore.save(history.toList())
+    }
+}
+
+private fun Throwable.userMessage(): String {
+    val raw = generateSequence(this) { it.cause }
+        .mapNotNull { it.message }
+        .firstOrNull { it.isNotBlank() }
+        ?: toString()
+    val lowered = raw.lowercase()
+    return if (
+        "smartexception" in lowered ||
+        "ffmpegkitconfig" in lowered.replace(" ", "") ||
+        this is NoClassDefFoundError ||
+        this is ExceptionInInitializerError
+    ) {
+        "FFmpeg couldn't start. Rebuild and reinstall the app to pick up the missing library."
+    } else {
+        raw
     }
 }

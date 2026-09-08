@@ -10,6 +10,7 @@ activityCompose = "1.8.0"
 composeBom = "2024.09.00"
 chaquopy = "17.0.0"
 ffmpegKit = "8.1.7"
+smartException = "0.2.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,6 +31,7 @@ androidx-compose-material3-adaptive-navigation-suite = { group = "androidx.compo
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleRuntimeKtx" }
 ffmpeg-kit-full = { group = "dev.ffmpegkit-maintained", name = "ffmpeg-kit-full", version.ref = "ffmpegKit" }
+smart-exception-java = { group = "com.arthenica", name = "smart-exception-java", version.ref = "smartException" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
