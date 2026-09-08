@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Android Downloader Pro</title>
+  <!-- Phosphor Icons for crisp Android UI icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    :root {
+      --bg-body: #0d1117;
+      --app-bg: #10151d;
+      --card-bg: #18202c;
+      --card-hover: #1e2837;
+      --accent: #2dd4bf;
+      --accent-hover: #14b8a6;
+      --accent-dim: rgba(45, 212, 191, 0.12);
+      --text-main: #f1f5f9;
+      --text-muted: #8e9bb0;
+      --border-color: #232d3d;
+      --youtube: #ef4444;
+      --instagram: #ec4899;
+      --audio-color: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* Smartphone Mockup Frame */
+    .phone-mockup {
+      width: 390px;
+      height: 800px;
+      background-color: var(--app-bg);
+      border-radius: 44px;
+      border: 10px solid #232a36;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Dynamic Island / Camera Notch */
+    .notch {
+      width: 110px;
+      height: 24px;
+      background: #000;
+      border-radius: 20px;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 44px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 24px 0;
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 10;
+    }
+
+    /* App Header */
+    .app-header {
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      background: var(--accent-dim);
+      color: var(--accent);
+      padding: 8px;
+      border-radius: 12px;
+      font-size: 20px;
+      display: flex;
+    }
+    .brand h1 {
+      font-size: 17px;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+    .header-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    /* Screen Container */
+    .screen-viewport {
+      flex: 1;
+      position: relative;
+      overflow-y: auto;
+    }
+    .screen-viewport::-webkit-scrollbar {
+      display: none;
+    }
+
+    .screen {
+      display: none;
+      padding: 18px 20px 85px;
+      min-height: 100%;
+      animation: fadeIn 0.2s ease;
+    }
+    .screen.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Home Screen Styles */
+    .input-section {
+      margin-bottom: 20px;
+    }
+    .input-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: block;
+    }
+    .input-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 6px 6px 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .input-box input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      flex: 1;
+      font-size: 13px;
+    }
+    .input-box input::placeholder {
+      color: #526075;
+    }
+    .btn-download {
+      background: var(--accent);
+      color: #0d1117;
+      border: none;
+      padding: 9px 15px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-download:hover {
+      background: var(--accent-hover);
+    }
+
+    .feature-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .card:hover {
+      background: var(--card-hover);
+      border-color: rgba(45, 212, 191, 0.4);
+      transform: translateY(-2px);
+    }
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #fff;
+    }
+    .icon-yt { background: #e02d2d; }
+    .icon-music { background: #0284c7; }
+    .icon-insta { background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6); }
+
+    .card-info h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 3px;
+    }
+    .card-info p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Tap More Platforms Card */
+    .more-platforms-card {
+      margin-top: 14px;
+      background: linear-gradient(180deg, #142832, #101c24);
+      border: 1px dashed rgba(45, 212, 191, 0.5);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .more-icon-badge {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      color: #0d1117;
+      border-radius: 50%;
+      margin: 0 auto 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .more-platforms-card h4 {
+      font-size: 13px;
+      color: var(--text-main);
+      margin-bottom: 10px;
+    }
+    .platform-icons-row {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      color: var(--text-muted);
+      font-size: 18px;
+    }
+
+    /* Section Headings */
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 16px 0 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .section-title span {
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    /* Download List Items */
+    .dl-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .dl-item-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .dl-thumb {
+      width: 42px;
+      height: 42px;
+      background: #232c3d;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: var(--accent);
+    }
+    .dl-meta {
+      flex: 1;
+      overflow: hidden;
+    }
+    .dl-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dl-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .dl-actions {
+      display: flex;
+      gap: 6px;
+      color: var(--text-muted);
+    }
+    .progress-bar-bg {
+      height: 5px;
+      background: #232d3d;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
+    .progress-stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* History List Items */
+    .history-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .history-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      background: #1e2837;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 20px;
+      position: relative;
+    }
+    .badge-fmt {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      font-size: 8px;
+      font-weight: 700;
+      background: #000;
+      color: var(--accent);
+      padding: 1px 3px;
+      border-radius: 3px;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 68px;
+      background: #0d121a;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: 6px;
+      z-index: 50;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      background: none;
+      border: none;
+      outline: none;
+    }
+    .nav-item i {
+      font-size: 20px;
+    }
+    .nav-item.active {
+      color: var(--accent);
+    }
+
+    /* Format Selection Popup / Bottom Sheet */
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(3px);
+      z-index: 200;
+      display: none;
+      align-items: flex-end;
+      animation: fadeIn 0.2s ease;
+    }
+    .overlay.active {
+      display: flex;
+    }
+    .bottom-sheet {
+      width: 100%;
+      background: #141c26;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      padding: 20px 20px 30px;
+      transform: translateY(100%);
+      animation: slideUp 0.25s forwards cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideUp {
+      to { transform: translateY(0); }
+    }
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .sheet-header h3 {
+      color: var(--text-main);
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .btn-close-sheet {
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: var(--text-main);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .video-preview-pill {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .video-preview-pill span {
+      font-size: 12px;
+      color: var(--text-main);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sheet-category-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 12px 0 8px;
+    }
+
+    .format-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .fmt-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .fmt-row:hover {
+      background: var(--card-hover);
+    }
+    .fmt-row.selected {
+      border-color: var(--accent);
+      background: rgba(45, 212, 191, 0.08);
+    }
+    .fmt-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+    .fmt-size {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .btn-action-download {
+      width: 100%;
+      background: var(--accent);
+      color: #0b1117;
+      border: none;
+      padding: 13px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 18px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-action-download:hover {
+      background: var(--accent-hover);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Android Phone Mockup Container -->
+  <div class="phone-mockup">
+    <div class="notch"></div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>11:25</span>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <i class="ph-bold ph-wifi-high"></i>
+        <i class="ph-bold ph-battery-charging" style="color: var(--accent);"></i>
+      </div>
+    </div>
+
+    <!-- Top Header -->
+    <div class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="ph-fill ph-arrow-fat-lines-down"></i>
+        </div>
+        <h1>Android Downloader Pro</h1>
+      </div>
+      <button class="header-btn" title="Notifications">
+        <i class="ph ph-bell"></i>
+      </button>
+    </div>
+
+    <!-- Screen Viewport -->
+    <div class="screen-viewport">
+      
+      <!-- SCREEN 1: HOME -->
+      <section id="screen-home" class="screen active">
+        <div class="input-section">
+          <span class="input-label">Paste YouTube or Instagram Link</span>
+          <div class="input-box">
+            <input type="text" id="url-input" value="https://youtube.com/watch?v=cute-puppy" placeholder="Paste link here..." />
+            <button class="btn-download" onclick="openFormatsModal('Cute Puppies Vlog')">Download</button>
+          </div>
+        </div>
+
+        <div class="feature-cards">
+          <!-- Card: YouTube Video -->
+          <div class="card" onclick="openFormatsModal('YouTube Video')">
+            <div class="card-icon icon-yt">
+              <i class="ph-fill ph-youtube-logo"></i>
+            </div>
+            <div class="card-info">
+              <h3>YouTube Video</h3>
+              <p>MP4 formats in 1080p, 720p, 480p</p>
+            </div>
+          </div>
+
+          <!-- Card: YouTube Audio -->
+          <div class="card" onclick="openFormatsModal('YouTube Audio')">
+            <div class="card-icon icon-music">
+              <i class="ph-fill ph-music-note"></i>
+            </div>
+            <div class="card-info">
+              <h3>YouTube Audio</h3>
+              <p>Shorts & music tracks to MP3, M4A</p>
+            </div>
+          </div>
+
+          <!-- Card: Instagram Reels -->
+          <div class="card" onclick="openFormatsModal('Instagram Reel')">
+            <div class="card-icon icon-insta">
+              <i class="ph-fill ph-instagram-logo"></i>
+            </div>
+            <div class="card-info">
+              <h3>Instagram Reels</h3>
+              <p>Download reels & video clips directly</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tap for More Platforms -->
+        <div class="more-platforms-card" onclick="alert('Supported platforms: TikTok, Twitter/X, Facebook, Threads, Vimeo!')">
+          <div class="more-icon-badge">
+            <i class="ph-bold ph-plus"></i>
+          </div>
+          <h4>Tap for More Platforms</h4>
+          <div class="platform-icons-row">
+            <i class="ph-bold ph-tiktok-logo"></i>
+            <i class="ph-bold ph-facebook-logo"></i>
+            <i class="ph-bold ph-x-logo"></i>
+            <i class="ph-bold ph-twitch-logo"></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: DOWNLOADS (Live Progress) -->
+      <section id="screen-downloads" class="screen">
+        <div class="section-title">
+          In Progress
+          <span style="color: var(--accent);"><i class="ph-bold ph-arrows-down-up"></i></span>
+        </div>
+
+        <div id="active-downloads-container">
+          <!-- Demo Item 1 -->
+          <div class="dl-item" id="demo-item">
+            <div class="dl-item-top">
+              <div class="dl-thumb">
+                <i class="ph-fill ph-video-camera"></i>
+              </div>
+              <div class="dl-meta">
+                <div class="dl-name">Cute Puppies Vlog.mp4</div>
+                <div class="dl-sub">YouTube • 1080p FHD</div>
+              </div>
+              <div class="dl-actions">
+                <i class="ph-bold ph-pause"></i>
+                <i class="ph-bold ph-x"></i>
+              </div>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="demo-progress" style="width: 58%;"></div>
+            </div>
+            <div class="progress-stats">
+              <span id="demo-pct">58% • 3.8 MB/s</span>
+              <span>104/180 MB</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top: 24px;">
+          Completed
+          <span>Clear All</span>
+        </div>
+
+        <div class="history-card">
+          <div class="history-thumb">
+            <i class="ph-fill ph-check-circle" style="color: var(--accent);"></i>
+            <span class="badge-fmt">MP4</span>
+          </div>
+          <div class="dl-meta">
+            <div class="dl-name">Hiking in Swiss Alps.mp4</div>
+            <div class="dl-sub">Completed • 45.5 MB</div>
+          </div>
+          <i class="ph-bold ph-dots-three-vertical" style="color: var(--text-muted);"></i>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: HISTORY -->
+      <section id="screen-history" class="screen">
+        <div class="input-box" style="margin-bottom: 14px;">
+          <i class="ph ph-magnifying-glass" style="color: var(--text-muted);"></i>
+          <input type="text" placeholder="Search downloaded history..." />
+        </div>
+
+        <div class="section-title">Past Downloads</div>
+
+        <div class="history-card">
+          <div class="history-thumb">
+            <i class="ph-fill ph-youtube-logo" style="color: var(--youtube);"></i>
+            <span class="badge-fmt">MP4</span>
+          </div>
+          <div class="dl-meta">
+            <div class="dl-name">Learn Python in 1 Hour</div>
+            <div class="dl-sub">YouTube • Yesterday • 33.5 MB</div>
+          </div>
+          <i class="ph-bold ph-dots-three-vertical" style="color: var(--text-muted);"></i>
+        </div>
+
+        <div class="history-card">
+          <div class="history-thumb">
+            <i class="ph-fill ph-instagram-logo" style="color: var(--instagram);"></i>
+            <span class="badge-fmt">MP4</span>
+          </div>
+          <div class="dl-meta">
+            <div class="dl-name">Nature Aesthetic Reel</div>
+            <div class="dl-sub">Instagram • 3 days ago • 14.2 MB</div>
+          </div>
+          <i class="ph-bold ph-dots-three-vertical" style="color: var(--text-muted);"></i>
+        </div>
+
+        <div class="history-card">
+          <div class="history-thumb">
+            <i class="ph-fill ph-music-note" style="color: var(--audio-color);"></i>
+            <span class="badge-fmt">MP3</span>
+          </div>
+          <div class="dl-meta">
+            <div class="dl-name">Lofi Chill Beats Vol 3</div>
+            <div class="dl-sub">YouTube Audio • 1 week ago • 8.4 MB</div>
+          </div>
+          <i class="ph-bold ph-dots-three-vertical" style="color: var(--text-muted);"></i>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- POPUP MODAL: Format Selection Bottom Sheet -->
+    <div class="overlay" id="formatOverlay" onclick="closeFormatsModal(event)">
+      <div class="bottom-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-header">
+          <h3>Select Download Format</h3>
+          <button class="btn-close-sheet" onclick="closeFormatsModal()"><i class="ph-bold ph-x"></i></button>
+        </div>
+
+        <div class="video-preview-pill">
+          <i class="ph-fill ph-play-circle" style="color: var(--accent); font-size: 20px;"></i>
+          <span id="modal-video-title">Cute Puppies Vlog</span>
+        </div>
+
+        <div class="sheet-category-title">Video (MP4)</div>
+        <div class="format-options">
+          <div class="fmt-row selected" onclick="selectFormat(this, '1080p Full HD')">
+            <div class="fmt-left">
+              <i class="ph-bold ph-video-camera"></i>
+              <span>1080p Full HD (MP4)</span>
+            </div>
+            <span class="fmt-size">180 MB</span>
+          </div>
+          <div class="fmt-row" onclick="selectFormat(this, '720p HD')">
+            <div class="fmt-left">
+              <i class="ph-bold ph-video-camera"></i>
+              <span>720p HD (MP4)</span>
+            </div>
+            <span class="fmt-size">95 MB</span>
+          </div>
+        </div>
+
+        <div class="sheet-category-title">Audio (MP3 / M4A)</div>
+        <div class="format-options">
+          <div class="fmt-row" onclick="selectFormat(this, 'MP3 High Quality (320kbps)')">
+            <div class="fmt-left">
+              <i class="ph-bold ph-headphones"></i>
+              <span>High Quality (320kbps MP3)</span>
+            </div>
+            <span class="fmt-size">8.5 MB</span>
+          </div>
+          <div class="fmt-row" onclick="selectFormat(this, 'M4A Audio')">
+            <div class="fmt-left">
+              <i class="ph-bold ph-headphones"></i>
+              <span>Custom Audio (M4A)</span>
+            </div>
+            <span class="fmt-size">6.2 MB</span>
+          </div>
+        </div>
+
+        <button class="btn-action-download" id="confirm-dl-btn" onclick="startDownloadFromModal()">
+          Download in 1080p Full HD
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" onclick="switchTab('screen-home', this)">
+        <i class="ph-fill ph-house"></i>
+        <span>Home</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('screen-downloads', this)">
+        <i class="ph-bold ph-arrow-circle-down"></i>
+        <span>Downloads</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('screen-history', this)">
+        <i class="ph-bold ph-clock-counter-clockwise"></i>
+        <span>History</span>
+      </button>
+    </nav>
+  </div>
+
+  <script>
+    let selectedFormatName = "1080p Full HD";
+
+    // Tab Switching Function
+    function switchTab(screenId, btnElement) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+
+      document.getElementById(screenId).classList.add('active');
+      btnElement.classList.add('active');
+    }
+
+    // Modal Control
+    function openFormatsModal(title = "Cute Puppies Vlog") {
+      document.getElementById('modal-video-title').innerText = title;
+      document.getElementById('formatOverlay').classList.add('active');
+    }
+
+    function closeFormatsModal() {
+      document.getElementById('formatOverlay').classList.remove('active');
+    }
+
+    // Format selection within modal
+    function selectFormat(row, formatName) {
+      document.querySelectorAll('.fmt-row').forEach(r => r.classList.remove('selected'));
+      row.classList.add('selected');
+      selectedFormatName = formatName;
+      document.getElementById('confirm-dl-btn').innerText = `Download in ${formatName}`;
+    }
+
+    // Trigger download simulation & jump to Downloads tab
+    function startDownloadFromModal() {
+      closeFormatsModal();
+      
+      // Switch tab to Downloads
+      const dlTabBtn = document.querySelectorAll('.nav-item')[1];
+      switchTab('screen-downloads', dlTabBtn);
+
+      // Animate progress simulation
+      let progress = 0;
+      const bar = document.getElementById('demo-progress');
+      const text = document.getElementById('demo-pct');
+      
+      const interval = setInterval(() => {
+        if (progress >= 100) {
+          clearInterval(interval);
+          text.innerText = "Completed • 180 MB";
+        } else {
+          progress += 5;
+          bar.style.width = progress + '%';
+          text.innerText = `${progress}% • 4.2 MB/s`;
+        }
+      }, 150);
+    }
+  </script>
+</body>
+</html>
