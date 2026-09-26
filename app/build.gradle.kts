@@ -6,13 +6,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.ytdlpapp"
+    namespace = "com.rohit.downloaderpro"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.example.ytdlpapp"
+        applicationId = "com.rohit.downloaderpro"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -25,8 +25,19 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("../upload-keystore.jks")
+            storePassword = "rohitsimran"
+            keyAlias = "upload"
+            keyPassword = "rohitsimran"
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

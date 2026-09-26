@@ -1,4 +1,4 @@
-package com.example.ytdlpapp
+package com.rohit.downloaderpro
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -79,22 +79,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ytdlpapp.ui.theme.Accent
-import com.example.ytdlpapp.ui.theme.AccentDim
-import com.example.ytdlpapp.ui.theme.AppBg
-import com.example.ytdlpapp.ui.theme.AudioBlue
-import com.example.ytdlpapp.ui.theme.BorderColor
-import com.example.ytdlpapp.ui.theme.BottomNavBg
-import com.example.ytdlpapp.ui.theme.CardBg
-import com.example.ytdlpapp.ui.theme.InstagramPink
-import com.example.ytdlpapp.ui.theme.MusicBlue
-import com.example.ytdlpapp.ui.theme.Placeholder
-import com.example.ytdlpapp.ui.theme.SheetBg
-import com.example.ytdlpapp.ui.theme.TextMain
-import com.example.ytdlpapp.ui.theme.TextMuted
-import com.example.ytdlpapp.ui.theme.YouTubeIconBg
-import com.example.ytdlpapp.ui.theme.YouTubeRed
-import com.example.ytdlpapp.ui.theme.YtDlpAppTheme
+import com.rohit.downloaderpro.ui.theme.Accent
+import com.rohit.downloaderpro.ui.theme.AccentDim
+import com.rohit.downloaderpro.ui.theme.AppBg
+import com.rohit.downloaderpro.ui.theme.AudioBlue
+import com.rohit.downloaderpro.ui.theme.BorderColor
+import com.rohit.downloaderpro.ui.theme.BottomNavBg
+import com.rohit.downloaderpro.ui.theme.CardBg
+import com.rohit.downloaderpro.ui.theme.InstagramPink
+import com.rohit.downloaderpro.ui.theme.MusicBlue
+import com.rohit.downloaderpro.ui.theme.Placeholder
+import com.rohit.downloaderpro.ui.theme.SheetBg
+import com.rohit.downloaderpro.ui.theme.TextMain
+import com.rohit.downloaderpro.ui.theme.TextMuted
+import com.rohit.downloaderpro.ui.theme.YouTubeIconBg
+import com.rohit.downloaderpro.ui.theme.YouTubeRed
+import com.rohit.downloaderpro.ui.theme.YtDlpAppTheme
 
 class MainActivity : ComponentActivity() {
     private val viewModel: DownloaderViewModel by viewModels()

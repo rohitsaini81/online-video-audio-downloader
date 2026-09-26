@@ -1,4 +1,4 @@
-package com.example.ytdlpapp.ui.theme
+package com.rohit.downloaderpro.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
