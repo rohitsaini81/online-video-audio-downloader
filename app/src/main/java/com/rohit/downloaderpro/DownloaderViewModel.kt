@@ -105,6 +105,17 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
         expandedHistoryId = null
     }
 
+    fun onSharedText(text: String) {
+        val sharedUrl = extractUrl(text)
+        if (sharedUrl == null) {
+            snackbarMessage = "No link found in the shared content."
+            return
+        }
+        url = sharedUrl
+        selectedTab = AppTab.Home
+        requestDownload("video")
+    }
+
     fun requestDownload(preferredCategory: String = "video") {
         val trimmed = url.trim()
         if (trimmed.isEmpty()) {
@@ -307,6 +318,12 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
     private fun persistHistory() {
         historyStore.save(history.toList())
     }
+}
+
+private val urlPattern = Regex("""https?://[^\s"'<>]+""", RegexOption.IGNORE_CASE)
+
+internal fun extractUrl(text: String): String? {
+    return urlPattern.find(text)?.value?.trimEnd('.', ',', ')', ']', '!', '?')
 }
 
 private fun Throwable.userMessage(): String {

@@ -1,5 +1,6 @@
 package com.rohit.downloaderpro
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -102,11 +103,29 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        if (savedInstanceState == null) {
+            handleShareIntent(intent)
+        }
         setContent {
             YtDlpAppTheme(dynamicColor = false) {
                 DownloaderApp(viewModel)
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleShareIntent(intent)
+    }
+
+    private fun handleShareIntent(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_SEND || intent.type?.startsWith("text/") != true) return
+        val sharedText = listOfNotNull(
+            intent.getStringExtra(Intent.EXTRA_TEXT),
+            intent.getStringExtra(Intent.EXTRA_SUBJECT),
+        ).joinToString(" ")
+        viewModel.onSharedText(sharedText)
     }
 }
 
